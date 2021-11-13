@@ -6,7 +6,8 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(purrr)
 ```
 
 ### Problem_0 - Creating Local Data File
@@ -16,7 +17,20 @@ dir.create(file.path(getwd(), "hw5_data_file"), recursive = TRUE)
 list.files()
 ```
 ```{r}
-
+data_files <- 
+  tibble(list.files("./data")) %>%
+  mutate(file_list = paste(list.files("./data")))
 ```
+
+
+```{r}
+read_files <- function(x) {
+  
+    data = read_csv(paste0("./data/", x))
+}
+
+map_df(data_files$file_list, read_files)
+```
+
 
 
