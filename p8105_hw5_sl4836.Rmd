@@ -9,3 +9,14 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+### Problem_0 - Creating Local Data File
+```{r}
+dir.create(file.path(getwd(), "hw5_data_file"), recursive = TRUE)
+
+list.files()
+```
+```{r}
+
+```
+
+
