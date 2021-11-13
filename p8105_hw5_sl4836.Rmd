@@ -8,7 +8,29 @@ output: html_document
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(purrr)
+library(janitor)
 ```
+
+```{r}
+library(tidyverse)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
 
 ### Problem_0 - Creating Local Data File
 ```{r}
@@ -23,14 +45,43 @@ data_files <-
 ```
 
 
-```{r}
+```{r, message = FALSE}
 read_files <- function(x) {
   
-    data = read_csv(paste0("./data/", x))
+    data = read_csv(paste0("./data/", x)) %>%
+      mutate(file_names = x)
 }
 
-map_df(data_files$file_list, read_files)
+arm_dataset <- map_df(data_files$file_list, read_files) 
+arm_dataset
 ```
+```{r}
+clean_arm_dataset <-
+  arm_dataset %>%
+  janitor::clean_names() %>%
+  gather(key = week, value = arm_value, week_1:week_8) %>%
+  mutate(week = str_remove(week, "week_")) %>%
+  mutate(id = as.integer(str_extract(file_names, "[0-9][0-9]"))) %>%
+  mutate(file_names = ifelse(str_detect(file_names, "con") == TRUE,
+                             "control", "experiment")) %>%
+  mutate(across(.cols = c(file_names, week, id), as.factor)) %>%
+  relocate(file_names, id, arm_value)
+
+clean_arm_dataset
+```
+
+```{r}
+clean_arm_dataset %>%
+  ggplot(aes(week, arm_value, color=id)) + 
+  geom_point(size = 0.2) + 
+  geom_line(aes(group = id), alpha=0.5) +
+  facet_grid(~file_names)
+```
+```{r}
+
+```
+
+
 
 
 
