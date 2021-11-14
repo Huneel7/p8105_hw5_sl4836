@@ -77,9 +77,43 @@ clean_arm_dataset %>%
   geom_line(aes(group = id), alpha=0.5) +
   facet_grid(~file_names)
 ```
-```{r}
 
+```{r}
+library(tidyverse)
+
+set.seed(10)
+
+iris_with_missing = iris %>% 
+  map_df(~replace(.x, sample(1:150, 20), NA)) %>%
+  mutate(Species = as.character(Species))
+
+iris_with_missing
 ```
+
+
+```{r}
+fill_NA <- function(v) {
+  
+  numeric_result = 
+    v %>%  
+    mutate_if(is.numeric, 
+              funs(ifelse(is.na(.),  mean(., na.rm = TRUE), .))) %>%
+    select_if(is.numeric)
+                    
+  character_result = 
+    v %>% 
+    mutate_if(is.character, replace_na, replace = "virginica") %>% 
+    select_if(is.character)
+  
+  tibble(numeric_result, character_result)
+}
+
+
+fill_NA(iris_with_missing)
+
+iris_with_missing %>% summarise_if(is.numeric, mean, na.rm=T)
+```
+
 
 
 
