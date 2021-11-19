@@ -62,23 +62,94 @@ The dimension of the trash_data is **`r homicide_nrow` x**  **`r homicide_ncol`.
 
 
 ```{r}
-homicide_data %>%
+homicide_clean_data <-
+  homicide_data %>%
   mutate(city_state = str_c(city, state),
          resolution = case_when(
           disposition == "Closed without arrest" ~ "unsolved",
          disposition == "Open/No arrest" ~ "unsolved",
-         disposition == "Closed by arrest" ~ "solved",
+         disposition == "Closed by arrest" ~ "solved"
          ))  %>%
   relocate(city_state) %>%
   filter(city_state != "TulsaAL")
+
 
 ```
 
 
 ```{r}
+baltimore_df <-  
+  homicide_clean_data %>%
+  filter(city_state == "BaltimoreMD")
+
+baltimore_summary <-
+  baltimore_df %>% 
+  summarise(
+    unsolved = sum(resolution == "unsolved"),
+    n = n()
+  )
+
+baltimore_test <-
+  prop.test(
+  x = baltimore_summary %>% pull(unsolved),
+  n = baltimore_summary %>% pull(n)
+  )
+
+baltimore_test %>% 
+  broom::tidy()
+```
+```{r}
+prop_test_fucntion <- function(city_df) {
+  
+  city_summary =
+  city_df %>% 
+  summarise(
+    unsolved = sum(resolution == "unsolved"),
+    n = n()
+  )
+  
+  city_test =
+  prop.test(
+  x = city_summary %>% pull(unsolved),
+  n = city_summary %>% pull(n)
+  )
+  
+  
+  return(city_test)
+}
 
 
 ```
+
+
+```{r}
+nested_df <-
+  homicide_clean_data %>% 
+  nest(data = uid:resolution) %>%
+  mutate(
+    test_results = map(data, prop_test_fucntion),
+    tidy_results = map(test_results, broom::tidy)
+  ) %>%
+  select(city_state, tidy_results) %>%
+  unnest(tidy_results) %>%
+  select(city_state, estimate, starts_with("conf"))
+```
+
+```{r}
+nested_df
+```
+
+
+
+```{r}
+nested_df %>% 
+  mutate(city_state = fct_reorder(city_state, estimate)) %>%
+  ggplot(aes(x = city_state, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
 
 ### Problem 2
 
