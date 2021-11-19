@@ -9,6 +9,7 @@ output: html_document
 library(tidyverse)
 library(purrr)
 library(janitor)
+library(readr)
 ```
 
 ```{r}
@@ -38,12 +39,55 @@ dir.create(file.path(getwd(), "hw5_data_file"), recursive = TRUE)
 
 list.files()
 ```
+
+
+### Problem 1
+```{r}
+urlfile = "https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"
+
+homicide_data <- read_csv(url(urlfile))
+```
+
+
+```{r}
+homicide_nrow <- nrow(homicide_data)
+homicide_ncol <- ncol(homicide_data)
+homicide_variables <- names(homicide_data)
+
+```
+
+
+The dimension of the trash_data is **`r homicide_nrow` x**  **`r homicide_ncol`.** There are **`r homicide_nrow`** number of observations and **`r homicide_ncol`**  variables: *`r homicide_variables`.*
+
+
+
+```{r}
+homicide_data %>%
+  mutate(city_state = str_c(city, state),
+         resolution = case_when(
+          disposition == "Closed without arrest" ~ "unsolved",
+         disposition == "Open/No arrest" ~ "unsolved",
+         disposition == "Closed by arrest" ~ "solved",
+         ))  %>%
+  relocate(city_state) %>%
+  filter(city_state != "TulsaAL")
+
+```
+
+
+```{r}
+
+
+```
+
+### Problem 2
+
+
 ```{r}
 data_files <- 
   tibble(list.files("./data")) %>%
   mutate(file_list = paste(list.files("./data")))
 ```
-
 
 ```{r, message = FALSE}
 read_files <- function(x) {
@@ -90,7 +134,7 @@ iris_with_missing = iris %>%
 iris_with_missing
 ```
 
-
+### Problem 3
 ```{r}
 fill_NA <- function(v) {
   

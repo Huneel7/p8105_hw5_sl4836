@@ -197,6 +197,52 @@ scale_fill_discrete = scale_fill_viridis_d</code></pre>
 <pre class="r"><code>list.files()</code></pre>
 <pre><code>## [1] &quot;data&quot;                   &quot;hw5_data_file&quot;          &quot;p8105_hw5_sl4836.html&quot; 
 ## [4] &quot;p8105_hw5_sl4836.Rmd&quot;   &quot;p8105_hw5_sl4836.Rproj&quot; &quot;README.md&quot;</code></pre>
+</div>
+<div id="problem-1" class="section level3">
+<h3>Problem 1</h3>
+<pre class="r"><code>urlfile = &quot;https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv&quot;
+
+homicide_data &lt;- read_csv(url(urlfile))</code></pre>
+<pre><code>## Rows: 52179 Columns: 12</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (9): uid, victim_last, victim_first, victim_race, victim_age, victim_sex...
+## dbl (3): reported_date, lat, lon</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>homicide_nrow &lt;- nrow(homicide_data)
+homicide_ncol &lt;- ncol(homicide_data)
+homicide_variables &lt;- names(homicide_data)</code></pre>
+<p>The dimension of the trash_data is <strong>52179 x</strong> <strong>12.</strong> There are <strong>52179</strong> number of observations and <strong>12</strong> variables: <em>uid, reported_date, victim_last, victim_first, victim_race, victim_age, victim_sex, city, state, lat, lon, disposition.</em></p>
+<pre class="r"><code>homicide_data %&gt;%
+  mutate(city_state = str_c(city, state),
+         resolution = case_when(
+          disposition == &quot;Closed without arrest&quot; ~ &quot;unsolved&quot;,
+         disposition == &quot;Open/No arrest&quot; ~ &quot;unsolved&quot;,
+         disposition == &quot;Closed by arrest&quot; ~ &quot;solved&quot;,
+         ))  %&gt;%
+  relocate(city_state) %&gt;%
+  filter(city_state != &quot;TulsaAL&quot;)</code></pre>
+<pre><code>## # A tibble: 52,178 × 14
+##    city_state    uid        reported_date victim_last  victim_first victim_race
+##    &lt;chr&gt;         &lt;chr&gt;              &lt;dbl&gt; &lt;chr&gt;        &lt;chr&gt;        &lt;chr&gt;      
+##  1 AlbuquerqueNM Alb-000001      20100504 GARCIA       JUAN         Hispanic   
+##  2 AlbuquerqueNM Alb-000002      20100216 MONTOYA      CAMERON      Hispanic   
+##  3 AlbuquerqueNM Alb-000003      20100601 SATTERFIELD  VIVIANA      White      
+##  4 AlbuquerqueNM Alb-000004      20100101 MENDIOLA     CARLOS       Hispanic   
+##  5 AlbuquerqueNM Alb-000005      20100102 MULA         VIVIAN       White      
+##  6 AlbuquerqueNM Alb-000006      20100126 BOOK         GERALDINE    White      
+##  7 AlbuquerqueNM Alb-000007      20100127 MALDONADO    DAVID        Hispanic   
+##  8 AlbuquerqueNM Alb-000008      20100127 MALDONADO    CONNIE       Hispanic   
+##  9 AlbuquerqueNM Alb-000009      20100130 MARTIN-LEYVA GUSTAVO      White      
+## 10 AlbuquerqueNM Alb-000010      20100210 HERRERA      ISRAEL       Hispanic   
+## # … with 52,168 more rows, and 8 more variables: victim_age &lt;chr&gt;,
+## #   victim_sex &lt;chr&gt;, city &lt;chr&gt;, state &lt;chr&gt;, lat &lt;dbl&gt;, lon &lt;dbl&gt;,
+## #   disposition &lt;chr&gt;, resolution &lt;chr&gt;</code></pre>
+</div>
+<div id="problem-2" class="section level3">
+<h3>Problem 2</h3>
 <pre class="r"><code>data_files &lt;- 
   tibble(list.files(&quot;./data&quot;)) %&gt;%
   mutate(file_list = paste(list.files(&quot;./data&quot;)))</code></pre>
@@ -286,6 +332,9 @@ iris_with_missing</code></pre>
 ##  9          4.4         2.9          1.4         0.2 setosa 
 ## 10          4.9         3.1         NA           0.1 setosa 
 ## # … with 140 more rows</code></pre>
+</div>
+<div id="problem-3" class="section level3">
+<h3>Problem 3</h3>
 <pre class="r"><code>fill_NA &lt;- function(v) {
   
   numeric_result = 
