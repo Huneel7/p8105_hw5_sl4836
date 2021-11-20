@@ -2,7 +2,7 @@
 title: "p8105_hw5_sl4836"
 author: "Hun"
 date: "11/13/2021"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -56,8 +56,7 @@ homicide_variables <- names(homicide_data)
 
 ```
 
-
-The dimension of the trash_data is **`r homicide_nrow` x**  **`r homicide_ncol`.** There are **`r homicide_nrow`** number of observations and **`r homicide_ncol`**  variables: *`r homicide_variables`.*
+The dimension of the homicide_data is **`r homicide_nrow` x**  **`r homicide_ncol`.** There are **`r homicide_nrow`** number of observations of homicide cases in the 50 large U.S. cities and **`r homicide_ncol`**  variables: *`r homicide_variables`.*
 
 
 
@@ -151,15 +150,15 @@ nested_df %>%
 ```
 
 
-### Problem 2
-
-
+### Problem 2 - Importing Data
 ```{r}
 data_files <- 
   tibble(list.files("./data")) %>%
   mutate(file_list = paste(list.files("./data")))
+
 ```
 
+### Problem 2 - Creating functions to read multiple datasets in the list
 ```{r, message = FALSE}
 read_files <- function(x) {
   
@@ -170,6 +169,8 @@ read_files <- function(x) {
 arm_dataset <- map_df(data_files$file_list, read_files) 
 arm_dataset
 ```
+
+### Problem 2 - Tidying and wrangling the dataset
 ```{r}
 clean_arm_dataset <-
   arm_dataset %>%
@@ -178,20 +179,26 @@ clean_arm_dataset <-
   mutate(week = str_remove(week, "week_")) %>%
   mutate(id = as.integer(str_extract(file_names, "[0-9][0-9]"))) %>%
   mutate(file_names = ifelse(str_detect(file_names, "con") == TRUE,
-                             "control", "experiment")) %>%
+                             "Control", "Experiment")) %>%
   mutate(across(.cols = c(file_names, week, id), as.factor)) %>%
   relocate(file_names, id, arm_value)
 
 clean_arm_dataset
 ```
 
+### Problem 2 - Making a spaghetti plot showing observations on each subject over time
 ```{r}
 clean_arm_dataset %>%
   ggplot(aes(week, arm_value, color=id)) + 
   geom_point(size = 0.2) + 
   geom_line(aes(group = id), alpha=0.5) +
-  facet_grid(~file_names)
+  facet_grid(~file_names) +
+  labs(x = "Week", y = "Arm Value", 
+       title = "Arm Values on Each Subject over 8 Weeks in Two Groups")+
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
+
+In the experiment group, the arm values of subjects by and large show an upward trend over time during 8 weeks though the time for and magnitude of changes are different within subjects. On the other hand, in the control group, the arm values of subjects in overall fluctuate over time without any certain trends or patterns and by and large there is no huge changes in arm values within subjects compared to subjects in experiment group.
 
 ```{r}
 library(tidyverse)
@@ -223,11 +230,9 @@ fill_NA <- function(v) {
   tibble(numeric_result, character_result)
 }
 
-
 fill_NA(iris_with_missing)
-
-iris_with_missing %>% summarise_if(is.numeric, mean, na.rm=T)
 ```
+
 
 
 
