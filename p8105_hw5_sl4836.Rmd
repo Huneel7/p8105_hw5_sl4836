@@ -8,11 +8,9 @@ output: github_document
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(purrr)
-<<<<<<< HEAD
 library(janitor)
 library(readr)
-=======
->>>>>>> 0c17611cda5535c6068fe06ebe66ae6ff6afd1b0
+
 ```
 
 ```{r}
@@ -35,14 +33,12 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
 
-
 ### Problem_0 - Creating Local Data File
 ```{r}
 dir.create(file.path(getwd(), "hw5_data_file"), recursive = TRUE)
 
 list.files()
 ```
-
 
 
 ### Problem 1
@@ -176,7 +172,6 @@ arm_dataset
 
 ### Problem 2 - Tidying and wrangling the dataset
 ```{r}
-<<<<<<< HEAD
 clean_arm_dataset <-
   arm_dataset %>%
   janitor::clean_names() %>%
@@ -189,7 +184,6 @@ clean_arm_dataset <-
   relocate(file_names, id, arm_value)
 
 clean_arm_dataset
-=======
 data_files <- 
   tibble(list.files("./data"))
 ```
@@ -204,7 +198,6 @@ data_path <-
 
 
 data_path
->>>>>>> 0c17611cda5535c6068fe06ebe66ae6ff6afd1b0
 ```
 
 ### Problem 2 - Making a spaghetti plot showing observations on each subject over time
@@ -255,11 +248,6 @@ fill_NA(iris_with_missing)
 ```
 
 
-
-
-
-
-
 ```{r}
 read_files <- function(x) {
   
@@ -268,6 +256,4 @@ read_files <- function(x) {
 
 map_df(data_path$file_path, read_files)
 ```
-
-
 
