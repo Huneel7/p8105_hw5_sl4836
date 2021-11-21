@@ -153,8 +153,8 @@ nested_df %>%
 ### Problem 2 - Importing Data
 ```{r}
 data_files <- 
-  tibble(list.files("./data")) %>%
-  mutate(file_list = paste(list.files("./data")))
+  tibble(list.files("./hw5_data_file")) %>%
+  mutate(file_list = paste(list.files("./hw5_data_file")))
 
 ```
 
@@ -162,11 +162,12 @@ data_files <-
 ```{r, message = FALSE}
 read_files <- function(x) {
   
-    data = read_csv(paste0("./data/", x)) %>%
+    data = read_csv(paste0("./hw5_data_file/", x)) %>%
       mutate(file_names = x)
 }
 
-arm_dataset <- map_df(data_files$file_list, read_files) 
+arm_dataset <- map_df(data_files$file_list, read_files)
+
 arm_dataset
 ```
 
@@ -177,43 +178,33 @@ clean_arm_dataset <-
   janitor::clean_names() %>%
   gather(key = week, value = arm_value, week_1:week_8) %>%
   mutate(week = str_remove(week, "week_")) %>%
-  mutate(id = as.integer(str_extract(file_names, "[0-9][0-9]"))) %>%
+  mutate(subject_ID = as.integer(str_extract(file_names, "[0-9][0-9]"))) %>%
   mutate(file_names = ifelse(str_detect(file_names, "con") == TRUE,
                              "Control", "Experiment")) %>%
-  mutate(across(.cols = c(file_names, week, id), as.factor)) %>%
-  relocate(file_names, id, arm_value)
+  mutate(across(.cols = c(file_names, week, subject_ID), as.factor)) %>%
+  relocate(file_names, subject_ID, arm_value)
 
 clean_arm_dataset
-data_files <- 
-  tibble(list.files("./data"))
 ```
 
-
-```{r}
-data_path <- 
-  data_files %>%
-  mutate(file_list = paste(list.files("./data"))) %>%
-  mutate(file_path = paste0("./data/", file_list)) %>%
-  select(file_path)
-
-
-data_path
-```
 
 ### Problem 2 - Making a spaghetti plot showing observations on each subject over time
 ```{r}
 clean_arm_dataset %>%
-  ggplot(aes(week, arm_value, color=id)) + 
+  ggplot(aes(week, arm_value, color=subject_ID)) + 
   geom_point(size = 0.2) + 
-  geom_line(aes(group = id), alpha=0.5) +
+  geom_line(aes(group = subject_ID), alpha=0.5) +
   facet_grid(~file_names) +
   labs(x = "Week", y = "Arm Value", 
-       title = "Arm Values on Each Subject over 8 Weeks in Two Groups")+
+       title = "Arm Values on Each Subject over 8 Weeks in Two Groups",
+       col = "Subject ID") +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+  
 ```
 
-In the experiment group, the arm values of subjects by and large show an upward trend over time during 8 weeks though the time for and magnitude of changes are different within subjects. On the other hand, in the control group, the arm values of subjects in overall fluctuate over time without any certain trends or patterns and by and large there is no huge changes in arm values within subjects compared to subjects in experiment group.
+In the experiment group, the arm values of subjects by and large show an upward trend over time during 8 weeks though the time for and magnitude of changes are different within subjects. On the other hand, in the control group, the arm values of subjects in overall fluctuate over time without any certain trends or patterns and by and large there is no huge changes in arm values within subjects compared to subjects in the experiment group. Another interesting observation is none of the subjects in the control group reach arm value beyond 5 whereas about half the subjects in the experiment group reach arm value beyond 5 over time. 
 
+### Problem 3 - Importing data with missing vlaues
 ```{r}
 library(tidyverse)
 
@@ -222,38 +213,37 @@ set.seed(10)
 iris_with_missing = iris %>% 
   map_df(~replace(.x, sample(1:150, 20), NA)) %>%
   mutate(Species = as.character(Species))
-
-iris_with_missing
 ```
 
-### Problem 3
-```{r}
-fill_NA <- function(v) {
-  
-  numeric_result = 
-    v %>%  
-    mutate_if(is.numeric, 
-              funs(ifelse(is.na(.),  mean(., na.rm = TRUE), .))) %>%
-    select_if(is.numeric)
-                    
-  character_result = 
-    v %>% 
-    mutate_if(is.character, replace_na, replace = "virginica") %>% 
-    select_if(is.character)
-  
-  tibble(numeric_result, character_result)
-}
-
-fill_NA(iris_with_missing)
-```
-
+### Problem 3 - creating a function to fill in missing vlaues
 
 ```{r}
-read_files <- function(x) {
+fill_na <- function(v) {
   
-    data = read.csv(x)
+  if (is.numeric(v)) {
+    v = replace_na(v, mean(v, na.rm = T))
+  }
+  else if(is.character(v)) {
+    v = replace_na(v, "virginica")
+  }
+  return(as.vector(v))
 }
 
-map_df(data_path$file_path, read_files)
+result <- 
+  map(.x = iris_with_missing, ~fill_na(.x))
+
+result
+
+map(.x = result, ~is.vector(.x))
 ```
+
+```{r}
+result_as_data_frame <- 
+  map_df(.x = iris_with_missing, ~fill_na(.x))
+
+result_as_data_frame
+```
+
+
+
 
